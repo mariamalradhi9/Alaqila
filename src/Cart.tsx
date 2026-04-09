@@ -1,108 +1,180 @@
 import { useContext } from "react";
-import { CartContext } from "./CartContext";
 import { useNavigate } from "react-router-dom";
+import { CartContext } from "./CartContext";
 
 function Cart() {
-  const { cart, removeFromCart } = useContext(CartContext);
+  const { cart, addToCart, decreaseQuantity, removeFromCart } =
+    useContext(CartContext);
+
   const navigate = useNavigate();
 
   const total = cart.reduce(
-    (sum: number, item: any) => sum + item.price,
+    (sum: number, item: any) => sum + item.price * item.quantity,
     0
   );
 
+  if (cart.length === 0) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <h2 style={{ color: "#D4AF37" }}>السلة فاضية 🛒</h2>
+
+        <button
+          onClick={() => navigate("/shop")}
+          style={{
+            marginTop: "20px",
+            padding: "12px 30px",
+            background: "#D4AF37",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          الرجوع للتسوق
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ padding: "40px", marginTop: "20px" }}>
-      <h1 style={{ marginBottom: "30px", fontWeight: "bold" }}>
-        🛒 Your Cart
-      </h1>
+    <div style={{ padding: "40px", color: "white" }}>
+      {cart.map((item: any, index: number) => (
+        <div
+          key={index} // 🔥 مهم (بدل id)
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "20px",
+            marginBottom: "20px",
+            background: "#111",
+            padding: "15px",
+            borderRadius: "12px",
+            border: "1px solid #222",
+          }}
+        >
+          <img
+            src={item.image}
+            style={{
+              width: "80px",
+              height: "80px",
+              objectFit: "cover",
+              borderRadius: "10px",
+            }}
+          />
 
-      {cart.length === 0 ? (
-        <p style={{ fontSize: "18px" }}>السلة فاضية 😢</p>
-      ) : (
-        <>
-          {cart.map((item: any, index: number) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                gap: "20px",
-                marginBottom: "20px",
-                alignItems: "center",
-                background: "#f9f9f9",
-                padding: "15px",
-                borderRadius: "12px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-              }}
-            >
-              <img
-                src={item.image}
-                alt={item.name}
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  objectFit: "cover",
-                  borderRadius: "10px",
-                }}
-              />
+          <div style={{ flex: 1 }}>
+            <h3 style={{ color: "#D4AF37", margin: 0 }}>
+              {item.name}
+            </h3>
 
-              <div style={{ flex: 1 }}>
-                <h3 style={{ margin: 0 }}>{item.name}</h3>
-                <p style={{ margin: "5px 0", color: "gray" }}>
-                  {item.price} BD
-                </p>
-              </div>
+            {item.selectedSize && (
+              <p style={{ color: "#aaa" }}>
+                المقاس: {item.selectedSize}
+              </p>
+            )}
 
+            <p style={{ color: "#ccc", margin: "5px 0" }}>
+              {item.price} BD
+            </p>
+
+            <div style={{ display: "flex", gap: "10px" }}>
               <button
-                onClick={() => removeFromCart(index)}
+                onClick={() => addToCart(item)}
                 style={{
-                  background: "#ff4d4f",
-                  color: "white",
+                  background: "#D4AF37",
                   border: "none",
-                  padding: "8px 14px",
-                  borderRadius: "8px",
+                  padding: "5px 10px",
+                  borderRadius: "5px",
                   cursor: "pointer",
-                  fontWeight: "bold",
-                  transition: "0.3s",
                 }}
               >
-                حذف ❌
+                +
+              </button>
+
+              <span>{item.quantity}</span>
+
+              <button
+                onClick={() =>
+                  decreaseQuantity(item.id, item.selectedSize) // 🔥 مهم
+                }
+                style={{
+                  background: "#D4AF37",
+                  border: "none",
+                  padding: "5px 10px",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+              >
+                -
               </button>
             </div>
-          ))}
+          </div>
 
-          {/* المجموع */}
-          <div
+          <button
+            onClick={() =>
+              removeFromCart(item.id, item.selectedSize) // 🔥 مهم
+            }
             style={{
-              marginTop: "30px",
-              padding: "20px",
-              background: "#fff",
-              borderRadius: "12px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-              textAlign: "center",
+              background: "red",
+              color: "white",
+              border: "none",
+              padding: "8px 10px",
+              borderRadius: "6px",
+              cursor: "pointer",
             }}
           >
-            <h2>المجموع: {total} BD 💰</h2>
+            ✕
+          </button>
+        </div>
+      ))}
 
-            <button
-              onClick={() => navigate("/checkout")}
-              style={{
-                marginTop: "20px",
-                padding: "12px 20px",
-                borderRadius: "10px",
-                border: "none",
-                background: "black",
-                color: "white",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "bold",
-              }}
-            >
-              إتمام الطلب 💳
-            </button>
-          </div>
-        </>
-      )}
+      <h2
+        style={{
+          marginTop: "30px",
+          color: "#D4AF37",
+          textAlign: "center",
+        }}
+      >
+        المجموع: {total} BD
+      </h2>
+
+      <div
+        style={{
+          marginTop: "30px",
+          display: "flex",
+          justifyContent: "center",
+          gap: "20px",
+        }}
+      >
+        <button
+          onClick={() => navigate("/shop")}
+          style={{
+            padding: "12px 30px",
+            background: "#333",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+          }}
+        >
+          متابعة التسوق 🛍️
+        </button>
+
+        <button
+          onClick={() => navigate("/checkout")}
+          style={{
+            padding: "12px 30px",
+            background: "#D4AF37",
+            color: "#000",
+            border: "none",
+            borderRadius: "10px",
+            fontWeight: "bold",
+            cursor: "pointer",
+          }}
+        >
+          🧾 إتمام الطلب
+        </button>
+      </div>
     </div>
   );
 }

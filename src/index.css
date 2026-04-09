@@ -63,7 +63,10 @@
 }
 
 body {
+  background-color: #0B0F1A;
+  color: white;
   margin: 0;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 h1,
@@ -108,4 +111,8 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+.product-card:hover .add-btn {
+  opacity: 1;
 }

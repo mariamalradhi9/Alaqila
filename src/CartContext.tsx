@@ -1,20 +1,67 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 
 export const CartContext = createContext<any>(null);
 
 export function CartProvider({ children }: any) {
-  const [cart, setCart] = useState<any[]>([]);
+  const [cart, setCart] = useState<any[]>(() => {
+    const saved = localStorage.getItem("cart");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // 🔥 حفظ السلة
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
 
   const addToCart = (product: any) => {
-    setCart((prev: any[]) => [...prev, product]);
+    const existing = cart.find(
+      (item) =>
+        item.id === product.id &&
+        item.selectedSize === product.selectedSize
+    );
+
+    if (existing) {
+      setCart(
+        cart.map((item) =>
+          item.id === product.id &&
+          item.selectedSize === product.selectedSize
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
   };
 
-  const removeFromCart = (index: number) => {
-    setCart((prev: any[]) => prev.filter((_, i) => i !== index));
+  // 🔥 تقليل الكمية
+  const decreaseQuantity = (id: string, selectedSize?: string) => {
+    setCart(
+      cart
+        .map((item) =>
+          item.id === id && item.selectedSize === selectedSize
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  // 🔥 حذف عنصر
+  const removeFromCart = (id: string, selectedSize?: string) => {
+    setCart(
+      cart.filter(
+        (item) =>
+          !(
+            item.id === id &&
+            item.selectedSize === selectedSize
+          )
+      )
+    );
   };
 
   const clearCart = () => {
-    setCart([]); // 🔥 تفريغ السلة
+    setCart([]);
   };
 
   return (
@@ -22,9 +69,10 @@ export function CartProvider({ children }: any) {
       value={{
         cart,
         addToCart,
+        decreaseQuantity,
         removeFromCart,
-        setCart,   // 👈 مهم
-        clearCart, // 👈 أفضل
+        clearCart,
+        setCart,
       }}
     >
       {children}

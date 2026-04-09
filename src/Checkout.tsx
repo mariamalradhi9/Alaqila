@@ -1,6 +1,13 @@
 import { useState, useContext } from "react";
 import { CartContext } from "./CartContext";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "./firebase";
 
 function Checkout() {
@@ -9,9 +16,11 @@ function Checkout() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const total = cart.reduce(
-    (sum: number, item: any) => sum + item.price,
+    (sum: number, item: any) =>
+      sum + item.price * item.quantity,
     0
   );
 
@@ -22,33 +31,103 @@ function Checkout() {
     }
 
     try {
-      // 🔥 تخزين الطلب بشكل احترافي
+      setLoading(true);
+
+      // 🔥 التحقق من الكمية
+      for (const item of cart) {
+        const productRef = doc(db, "products", item.id);
+        const productSnap = await getDoc(productRef);
+
+        if (!productSnap.exists()) continue;
+
+        const data = productSnap.data();
+
+        if (data.sizes) {
+          // 🔥 منتج فيه مقاسات
+          if (data.sizes[item.selectedSize] < item.quantity) {
+            alert(`المنتج ${item.name} غير متوفر ❌`);
+            setLoading(false);
+            return;
+          }
+        } else {
+          // 🔥 منتج عادي
+          if (data.quantity < item.quantity) {
+            alert(`المنتج ${item.name} غير متوفر ❌`);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      // 🔥 حفظ الطلب
       await addDoc(collection(db, "orders"), {
-        customer: {
-          name,
-          phone,
-          address,
-        },
+        customer: { name, phone, address },
         items: cart,
         total,
-        status: "new", // 👈 جديد
-        createdAt: serverTimestamp(), // 👈 وقت دقيق
+        status: "new",
+        createdAt: serverTimestamp(),
       });
 
-      // 🧹 تنظيف السلة
+      // 🔥 تقليل الكمية
+      for (const item of cart) {
+        const productRef = doc(db, "products", item.id);
+        const productSnap = await getDoc(productRef);
+
+        if (productSnap.exists()) {
+          const data = productSnap.data();
+
+          if (data.sizes) {
+            // 🔥 تقليل حسب المقاس
+            await updateDoc(productRef, {
+              sizes: {
+                ...data.sizes,
+                [item.selectedSize]:
+                  data.sizes[item.selectedSize] - item.quantity,
+              },
+            });
+          } else {
+            // 🔥 تقليل عادي
+            await updateDoc(productRef, {
+              quantity: data.quantity - item.quantity,
+            });
+          }
+        }
+      }
+
       clearCart();
 
       alert("تم إرسال الطلب بنجاح 🎉");
 
+      setName("");
+      setPhone("");
+      setAddress("");
+
     } catch (error) {
       console.error(error);
       alert("صار خطأ 😢");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: "40px", maxWidth: "500px", margin: "auto" }}>
-      <h1 style={{ marginBottom: "30px" }}>💳 صفحة الدفع</h1>
+    <div
+      style={{
+        padding: "40px",
+        maxWidth: "500px",
+        margin: "auto",
+        color: "white",
+      }}
+    >
+      <h1
+        style={{
+          marginBottom: "20px",
+          color: "#D4AF37",
+          textAlign: "center",
+        }}
+      >
+        🧾 إتمام الطلب
+      </h1>
 
       <input
         placeholder="الاسم"
@@ -71,12 +150,25 @@ function Checkout() {
         style={inputStyle}
       />
 
-      <h2 style={{ marginBottom: "20px" }}>
+      <h2
+        style={{
+          marginBottom: "20px",
+          color: "#D4AF37",
+          textAlign: "center",
+        }}
+      >
         المجموع: {total} BD 💰
       </h2>
 
-      <button onClick={handleOrder} style={buttonStyle}>
-        تأكيد الطلب 🚀
+      <button
+        onClick={handleOrder}
+        disabled={loading}
+        style={{
+          ...buttonStyle,
+          opacity: loading ? 0.6 : 1,
+        }}
+      >
+        {loading ? "جارٍ الإرسال..." : "تأكيد الطلب 🚀"}
       </button>
     </div>
   );
@@ -84,21 +176,24 @@ function Checkout() {
 
 const inputStyle = {
   width: "100%",
-  padding: "10px",
+  padding: "12px",
   marginBottom: "15px",
-  borderRadius: "8px",
-  border: "1px solid #ccc",
+  borderRadius: "10px",
+  border: "1px solid #333",
+  background: "#111",
+  color: "white",
 };
 
 const buttonStyle = {
   width: "100%",
-  padding: "12px",
-  background: "black",
-  color: "white",
+  padding: "14px",
+  background: "#D4AF37",
+  color: "#000",
   border: "none",
-  borderRadius: "10px",
+  borderRadius: "12px",
   cursor: "pointer",
   fontSize: "16px",
+  fontWeight: "bold",
 };
 
 export default Checkout;
