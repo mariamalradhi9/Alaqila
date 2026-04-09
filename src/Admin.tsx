@@ -10,13 +10,25 @@ import { db } from "./firebase";
 
 function Admin() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [isAuth, setIsAuth] = useState(false);
+  const [password, setPassword] = useState("");
+
+  const ADMIN_PASSWORD = "1234";
+
+  const handleLogin = () => {
+    if (password === ADMIN_PASSWORD) {
+      setIsAuth(true);
+    } else {
+      alert("كلمة المرور غلط ❌");
+    }
+  };
 
   const getOrders = async () => {
     try {
       const snapshot = await getDocs(collection(db, "orders"));
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+      const data = snapshot.docs.map((docItem) => ({
+        id: docItem.id,
+        ...docItem.data(),
       }));
       setOrders(data);
     } catch (error) {
@@ -50,18 +62,94 @@ function Admin() {
   };
 
   useEffect(() => {
-    getOrders();
-  }, []);
+    if (isAuth) {
+      getOrders();
+    }
+  }, [isAuth]);
+
+  if (!isAuth) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          background: "#0B0F1A",
+          color: "white",
+          padding: "20px",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "420px",
+            background: "#111",
+            border: "1px solid #222",
+            borderRadius: "20px",
+            padding: "30px",
+            boxShadow: "0 0 25px rgba(212,175,55,0.08)",
+            textAlign: "center",
+          }}
+        >
+          <h2 style={{ color: "#D4AF37", marginBottom: "20px" }}>
+            🔐 دخول الأدمن
+          </h2>
+
+          <input
+            type="password"
+            placeholder="كلمة المرور"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "12px",
+              borderRadius: "10px",
+              border: "1px solid #333",
+              background: "#0B0F1A",
+              color: "white",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+
+          <button
+            onClick={handleLogin}
+            style={{
+              marginTop: "15px",
+              width: "100%",
+              padding: "12px",
+              background: "#D4AF37",
+              color: "#000",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              fontSize: "16px",
+            }}
+          >
+            دخول
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h1 style={{ marginBottom: "30px" }}>📦 الطلبات</h1>
+    <div
+      style={{
+        padding: "40px",
+        background: "#0B0F1A",
+        minHeight: "100vh",
+        color: "white",
+      }}
+    >
+      <h1 style={{ marginBottom: "30px", color: "#D4AF37" }}>📦 الطلبات</h1>
 
       {orders.length === 0 ? (
-        <p style={{ fontSize: "18px" }}>ما في طلبات حالياً 😴</p>
+        <p style={{ color: "#aaa", fontSize: "18px" }}>ما في طلبات حالياً 😴</p>
       ) : (
         orders.map((order) => {
-          // 🔥 دعم القديم + الجديد
           const customer = order.customer || {
             name: order.name,
             phone: order.phone,
@@ -69,80 +157,174 @@ function Admin() {
           };
 
           const items = order.items || order.cart || [];
+          const mainImage = items.length > 0 ? items[0]?.image : "";
 
           return (
             <div
               key={order.id}
               style={{
-                marginBottom: "20px",
-                padding: "20px",
-                border: "1px solid #ddd",
-                borderRadius: "12px",
-                background: "#fafafa",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                display: "flex",
+                flexDirection: "row",
+                gap: "20px",
+                marginBottom: "25px",
+                background: "#111",
+                borderRadius: "20px",
+                overflow: "hidden",
+                border: "1px solid #222",
+                boxShadow: "0 0 25px rgba(212,175,55,0.08)",
               }}
             >
-              {/* 👤 بيانات العميل */}
-              <h3>👤 {customer?.name || "—"}</h3>
-              <p>📞 {customer?.phone || "—"}</p>
-              <p>📍 {customer?.address || "—"}</p>
 
-              <p>💰 {order.total || 0} BD</p>
+              {/* التفاصيل */}
+              <div
+                style={{
+                  flex: 1,
+                  padding: "22px",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <h3 style={{ color: "#D4AF37", marginTop: 0, marginBottom: "10px" }}>
+                  👤 {customer?.name || "—"}
+                </h3>
 
-              {/* 🟢 حالة الطلب */}
-              <p>
-                الحالة:{" "}
-                <strong
-                  style={{
-                    color: order.status === "done" ? "green" : "orange",
-                  }}
-                >
-                  {order.status === "done" ? "تم التوصيل" : "جديد"}
-                </strong>
-              </p>
+                <p style={{ margin: "6px 0", color: "#ddd" }}>
+                  📞 {customer?.phone || "—"}
+                </p>
+                <p style={{ margin: "6px 0", color: "#ddd" }}>
+                  📍 {customer?.address || "—"}
+                </p>
 
-              <h4 style={{ marginTop: "15px" }}>🛒 المنتجات:</h4>
+                <p style={{ margin: "10px 0", color: "#D4AF37", fontWeight: "bold" }}>
+                  💰 {order.total || 0} BD
+                </p>
 
-              {items.length === 0 ? (
-                <p>لا توجد منتجات</p>
-              ) : (
-                items.map((item: any, i: number) => (
-                  <div key={i} style={{ marginLeft: "10px" }}>
-                    🛍 {item.name} - {item.price} BD
+                <div style={{ marginBottom: "12px" }}>
+                  <span
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "10px",
+                      background: order.status === "done" ? "green" : "#D4AF37",
+                      color: order.status === "done" ? "white" : "black",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      display: "inline-block",
+                    }}
+                  >
+                    {order.status === "done" ? "تم التوصيل" : "جديد"}
+                  </span>
+                </div>
+
+                <h4 style={{ marginTop: "10px", marginBottom: "12px", color: "#fff" }}>
+                  🛒 المنتجات:
+                </h4>
+
+                {items.length === 0 ? (
+                  <p style={{ color: "#888" }}>لا توجد منتجات</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {items.map((item: any, i: number) => (
+                      <div
+                        key={i}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          background: "#171717",
+                          border: "1px solid #222",
+                          borderRadius: "12px",
+                          padding: "10px",
+                        }}
+                      >
+                        {item.video && item.video !== "" ? (
+                          <video
+                            src={item.video}
+                            style={{
+                              width: "58px",
+                              height: "58px",
+                              objectFit: "cover",
+                              borderRadius: "10px",
+                              flexShrink: 0,
+                            }}
+                            muted
+                            autoPlay
+                            loop
+                          />
+                        ) : (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            style={{
+                              width: "58px",
+                              height: "58px",
+                              objectFit: "cover",
+                              borderRadius: "10px",
+                              flexShrink: 0,
+                            }}
+                          />
+                        )}
+
+                        <div>
+                          <p style={{ margin: 0, color: "white", fontWeight: "bold" }}>
+                            {item.name}
+                          </p>
+                          <p style={{ margin: "4px 0 0", color: "#aaa" }}>
+                            {item.price} BD
+                          </p>
+                          {item.quantity && (
+                            <p style={{ margin: "4px 0 0", color: "#888" }}>
+                              الكمية: {item.quantity}
+                            </p>
+                          )}
+                          {item.selectedSize && (
+                            <p style={{ margin: "4px 0 0", color: "#777" }}>
+                              المقاس: {item.selectedSize}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))
-              )}
+                )}
 
-              {/* أزرار التحكم */}
-              <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
-                <button
-                  onClick={() => markAsDone(order.id)}
+                <div
                   style={{
-                    background: "green",
-                    color: "white",
-                    border: "none",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    cursor: "pointer",
+                    marginTop: "18px",
+                    display: "flex",
+                    gap: "10px",
+                    flexWrap: "wrap",
                   }}
                 >
-                  تم التوصيل ✅
-                </button>
+                  <button
+                    onClick={() => markAsDone(order.id)}
+                    style={{
+                      background: "green",
+                      color: "white",
+                      border: "none",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    تم التوصيل ✅
+                  </button>
 
-                <button
-                  onClick={() => deleteOrder(order.id)}
-                  style={{
-                    background: "#ff4d4f",
-                    color: "white",
-                    border: "none",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  حذف ❌
-                </button>
+                  <button
+                    onClick={() => deleteOrder(order.id)}
+                    style={{
+                      background: "#ff3b30",
+                      color: "white",
+                      border: "none",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    حذف ❌
+                  </button>
+                </div>
               </div>
             </div>
           );

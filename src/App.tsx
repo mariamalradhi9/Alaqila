@@ -234,15 +234,28 @@ function App() {
                           Sold Out
                         </div>
                       )}
-                      <img
-                        src={product.image}
-                        style={{
-                          width: "100%",
-                          height: "220px",
-                          objectFit: "cover",
-                          transition: "0.3s",
-                        }}
-                      />
+                      {product.video && product.video !== "" ? (
+                        <video
+                          src={product.video}
+                          style={{
+                            width: "100%",
+                            height: "220px",
+                            objectFit: "cover",
+                          }}
+                          autoPlay
+                          muted
+                          loop
+                        />
+                      ) : (
+                        <img
+                          src={product.image}
+                          style={{
+                            width: "100%",
+                            height: "220px",
+                            objectFit: "cover",
+                          }}
+                        />
+                      )}
 
                       <div style={{ padding: "12px" }}>
                         <h3 style={{ color: "#D4AF37" }}>

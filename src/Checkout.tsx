@@ -35,6 +35,7 @@ function Checkout() {
 
       // 🔥 التحقق من الكمية
       for (const item of cart) {
+        if (!item || !item.id) continue; // skip invalid cart items
         const productRef = doc(db, "products", item.id);
         const productSnap = await getDoc(productRef);
 
@@ -80,6 +81,7 @@ function Checkout() {
 
       // 🔥 تقليل الكمية
       for (const item of cart) {
+        if (!item || !item.id) continue; // skip invalid cart items
         const productRef = doc(db, "products", item.id);
         const productSnap = await getDoc(productRef);
 
@@ -98,11 +100,8 @@ function Checkout() {
             data.sizes[size] !== undefined
           ) {
             await updateDoc(productRef, {
-              sizes: {
-                ...data.sizes,
-                [size]:
-                  (data.sizes[size] || 0) - (item.quantity || 0),
-              },
+              [`sizes.${size}`]:
+                (data.sizes[size] || 0) - (item.quantity || 0),
             });
           } else {
             await updateDoc(productRef, {

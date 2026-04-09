@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 import { CartContext } from "./CartContext";
 
@@ -9,21 +9,20 @@ function Product() {
   const [product, setProduct] = useState<any>(null);
   const navigate = useNavigate();
   const { addToCart } = useContext(CartContext);
-  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
-  const getProduct = async () => {
+  useEffect(() => {
     if (!id) return;
 
     const docRef = doc(db, "products", id);
-    const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      setProduct(docSnap.data());
-    }
-  };
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setProduct(docSnap.data());
+      }
+    });
 
-  useEffect(() => {
-    getProduct();
+    return () => unsubscribe();
   }, [id]);
 
   if (!product)
@@ -140,7 +139,10 @@ function Product() {
                   return;
                 }
 
-                addToCart({ ...product, selectedSize });
+                addToCart({
+                  ...product,
+                  selectedSize: selectedSize || null,
+                });
                 navigate("/cart");
               }}
               style={{

@@ -4,8 +4,14 @@ export const CartContext = createContext<any>(null);
 
 export function CartProvider({ children }: any) {
   const [cart, setCart] = useState<any[]>(() => {
-    const saved = localStorage.getItem("cart");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("cart");
+      const parsed = saved ? JSON.parse(saved) : [];
+      // Filter out any corrupted items missing an id
+      return Array.isArray(parsed) ? parsed.filter((item: any) => item && item.id) : [];
+    } catch {
+      return [];
+    }
   });
 
   // 🔥 حفظ السلة
