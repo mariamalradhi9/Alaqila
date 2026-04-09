@@ -160,7 +160,7 @@ function App() {
       </Routes>
 
       {/* WhatsApp floating button */}
-      <a href="https://wa.me/97312345678" target="_blank" rel="noreferrer"
+      <a href="https://wa.me/97337573375" target="_blank" rel="noreferrer"
         style={{ position:"fixed",bottom:"24px",left:"24px",background:"#25D366",width:"52px",height:"52px",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"26px",boxShadow:"0 4px 16px rgba(37,211,102,0.4)",textDecoration:"none",zIndex:200 }}>
         💬
       </a>
