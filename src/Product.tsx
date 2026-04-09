@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import { CartContext } from "./CartContext";
 
@@ -9,20 +9,21 @@ function Product() {
   const [product, setProduct] = useState<any>(null);
   const navigate = useNavigate();
   const { addToCart } = useContext(CartContext);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState("");
 
-  useEffect(() => {
+  const getProduct = async () => {
     if (!id) return;
 
     const docRef = doc(db, "products", id);
+    const docSnap = await getDoc(docRef);
 
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setProduct(docSnap.data());
-      }
-    });
+    if (docSnap.exists()) {
+      setProduct({ id: docSnap.id, ...docSnap.data() });
+    }
+  };
 
-    return () => unsubscribe();
+  useEffect(() => {
+    getProduct();
   }, [id]);
 
   if (!product)
@@ -60,18 +61,52 @@ function Product() {
           maxWidth: "900px",
         }}
       >
-        {/* الصورة */}
-        <img
-          src={product.image}
-          alt={product.name}
-          style={{
-            width: "350px",
-            height: "350px",
-            objectFit: "cover",
-            borderRadius: "15px",
-            boxShadow: "0 0 25px rgba(212, 175, 55, 0.3)",
-          }}
-        />
+        {/* 🔥 الصورة أو الفيديو */}
+        {product.video ? (
+          <video
+            src={product.video}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{
+              width: "350px",
+              height: "350px",
+              objectFit: "cover",
+              borderRadius: "15px",
+              boxShadow: "0 0 25px rgba(212, 175, 55, 0.3)",
+            }}
+          />
+        ) : product.image ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            style={{
+              width: "350px",
+              height: "350px",
+              objectFit: "cover",
+              borderRadius: "15px",
+              boxShadow: "0 0 25px rgba(212, 175, 55, 0.3)",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "350px",
+              height: "350px",
+              borderRadius: "15px",
+              background: "#1a1a1a",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#555",
+              fontSize: "14px",
+              boxShadow: "0 0 25px rgba(212, 175, 55, 0.3)",
+            }}
+          >
+            لا توجد صورة
+          </div>
+        )}
 
         {/* التفاصيل */}
         <div style={{ color: "white", maxWidth: "400px" }}>
@@ -116,7 +151,7 @@ function Product() {
             قطعة أنيقة تضيف لمسة فخمة لإطلالتك ✨
           </p>
 
-          {/* 🔥 زر السلة (معدل فقط) */}
+          {/* 🔥 زر السلة */}
           {isSoldOut ? (
             <button
               style={{
@@ -139,10 +174,7 @@ function Product() {
                   return;
                 }
 
-                addToCart({
-                  ...product,
-                  selectedSize: selectedSize || null,
-                });
+                addToCart({ ...product, selectedSize });
                 navigate("/cart");
               }}
               style={{

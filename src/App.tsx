@@ -218,7 +218,10 @@ function App() {
                         e.currentTarget.style.boxShadow = "none";
                       }}
                     >
-                      {!product.sizes || Object.values(product.sizes).every(q => q === 0) && (
+                      {/* 🔥 بادج Sold Out */}
+                      {(product.sizes
+                        ? Object.values(product.sizes).every((q: any) => Number(q) === 0)
+                        : Number(product.quantity ?? 0) === 0) && (
                         <div
                           style={{
                             position: "absolute",
@@ -229,22 +232,26 @@ function App() {
                             padding: "5px 10px",
                             borderRadius: "8px",
                             fontSize: "12px",
+                            zIndex: 1,
                           }}
                         >
                           Sold Out
                         </div>
                       )}
-                      {product.video && product.video !== "" ? (
+                      {/* 🔥 صورة أو فيديو في الشبكة */}
+                      {product.video ? (
                         <video
                           src={product.video}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
                           style={{
                             width: "100%",
                             height: "220px",
                             objectFit: "cover",
+                            transition: "0.3s",
                           }}
-                          autoPlay
-                          muted
-                          loop
                         />
                       ) : (
                         <img
@@ -253,6 +260,7 @@ function App() {
                             width: "100%",
                             height: "220px",
                             objectFit: "cover",
+                            transition: "0.3s",
                           }}
                         />
                       )}

@@ -100,8 +100,7 @@ function Checkout() {
             data.sizes[size] !== undefined
           ) {
             await updateDoc(productRef, {
-              [`sizes.${size}`]:
-                (data.sizes[size] || 0) - (item.quantity || 0),
+              [`sizes.${size}`]: (data.sizes[size] || 0) - (item.quantity || 0),
             });
           } else {
             await updateDoc(productRef, {
