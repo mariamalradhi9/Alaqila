@@ -20,7 +20,7 @@ function Checkout() {
 
   const total = cart.reduce(
     (sum: number, item: any) =>
-      sum + item.price * item.quantity,
+      sum + (item.price || 0) * (item.quantity || 0),
     0
   );
 
@@ -40,18 +40,28 @@ function Checkout() {
 
         if (!productSnap.exists()) continue;
 
-        const data = productSnap.data();
+        const data: any = productSnap.data() || {};
 
-        if (data.sizes) {
-          // 🔥 منتج فيه مقاسات
-          if (data.sizes[item.selectedSize] < item.quantity) {
+        const size =
+          typeof item.selectedSize === "string"
+            ? item.selectedSize
+            : null;
+
+        // ✅ منتجات المقاسات
+        if (
+          data.sizes &&
+          size &&
+          typeof data.sizes === "object" &&
+          data.sizes[size] !== undefined
+        ) {
+          if ((data.sizes[size] || 0) < (item.quantity || 0)) {
             alert(`المنتج ${item.name} غير متوفر ❌`);
             setLoading(false);
             return;
           }
         } else {
-          // 🔥 منتج عادي
-          if (data.quantity < item.quantity) {
+          // ✅ منتجات عادية
+          if ((data.quantity || 0) < (item.quantity || 0)) {
             alert(`المنتج ${item.name} غير متوفر ❌`);
             setLoading(false);
             return;
@@ -74,28 +84,36 @@ function Checkout() {
         const productSnap = await getDoc(productRef);
 
         if (productSnap.exists()) {
-          const data = productSnap.data();
+          const data: any = productSnap.data() || {};
 
-          if (data.sizes) {
-            // 🔥 تقليل حسب المقاس
+          const size =
+            typeof item.selectedSize === "string"
+              ? item.selectedSize
+              : null;
+
+          if (
+            data.sizes &&
+            size &&
+            typeof data.sizes === "object" &&
+            data.sizes[size] !== undefined
+          ) {
             await updateDoc(productRef, {
               sizes: {
                 ...data.sizes,
-                [item.selectedSize]:
-                  data.sizes[item.selectedSize] - item.quantity,
+                [size]:
+                  (data.sizes[size] || 0) - (item.quantity || 0),
               },
             });
           } else {
-            // 🔥 تقليل عادي
             await updateDoc(productRef, {
-              quantity: data.quantity - item.quantity,
+              quantity:
+                (data.quantity || 0) - (item.quantity || 0),
             });
           }
         }
       }
 
       clearCart();
-
       alert("تم إرسال الطلب بنجاح 🎉");
 
       setName("");
