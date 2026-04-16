@@ -116,6 +116,43 @@ function Checkout() {
         }
       }
 
+      // 📨 إشعار تلجرام
+      try {
+        const TELEGRAM_BOT_TOKEN = "8602927179:AAGIBtonxP_RIQq8HygA4tdwxoBtqWXsnZ4";
+        const TELEGRAM_CHAT_ID   = "+97339315361";
+        const itemsList = cart
+          .map((item: any) =>
+            `• ${item.name}${item.selectedSize ? ` (مقاس: ${item.selectedSize})` : ""} × ${item.quantity} — ${(item.price * item.quantity).toFixed(3)} BD`
+          )
+          .join("\n");
+        const deliveryLine =
+          delivery === "delivery"
+            ? `📍 *العنوان:* ${address.trim()}\n🚗 *رسوم التوصيل:* ${DELIVERY_FEE} BD`
+            : `🤝 *الاستلام:* شخصي`;
+        const msg =
+          `🛒 *طلب جديد — ${orderNumber}*\n\n` +
+          `👤 *الاسم:* ${name.trim()}\n` +
+          `📞 *الهاتف:* ${phone.trim()}\n` +
+          `${deliveryLine}\n` +
+          `💳 *الدفع:* ${payment === "cod" ? "كاش عند الاستلام" : "Benefit"}\n\n` +
+          `📦 *المنتجات:*\n${itemsList}\n\n` +
+          `💰 *الإجمالي: ${total.toFixed(3)} BD*`;
+        await fetch(
+          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: TELEGRAM_CHAT_ID,
+              text: msg,
+              parse_mode: "Markdown",
+            }),
+          }
+        );
+      } catch (tgErr) {
+        console.error("Telegram error:", tgErr);
+      }
+
       clearCart();
       showToast(`تم إرسال طلبك بنجاح! رقم الطلب: ${orderNumber} 🎉`, "success");
       setTimeout(() => navigate("/track/" + orderNumber), 2000);

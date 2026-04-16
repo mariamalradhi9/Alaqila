@@ -91,6 +91,64 @@ function App() {
         {/* Shop */}
         <Route path="/shop" element={
           <div style={{ padding: "24px 16px" }}>
+            {/* 💍 قياس الخاتم */}
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+              <div style={{
+                background: "linear-gradient(135deg,#12172a 0%,#1a2035 100%)",
+                border: "1px solid #D4AF37", borderRadius: "16px",
+                padding: "14px 22px",
+                boxShadow: "0 4px 18px rgba(212,175,55,0.15)",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: "12px",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <svg width="36" height="36" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="22" cy="24" r="13" stroke="#D4AF37" strokeWidth="2.5" fill="none"/>
+                    <circle cx="22" cy="24" r="7.5" stroke="#D4AF3788" strokeWidth="1.5" fill="none" strokeDasharray="3 2.5"/>
+                    <path d="M16 10 Q22 6 28 10" stroke="#D4AF37" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+                    <circle cx="22" cy="7.5" r="2.5" fill="#D4AF37"/>
+                    <line x1="9" y1="24" x2="5" y2="24" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round"/>
+                    <line x1="39" y1="24" x2="35" y2="24" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round"/>
+                    <line x1="22" y1="37" x2="22" y2="41" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <div>
+                    <div style={{ color: "#D4AF37", fontWeight: "bold", fontSize: "14px" }}>💍 قيس مقاس خاتمك</div>
+                    <div style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>حمّل التطبيق واعرف مقاسك بدقة</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
+                  <a href="https://apps.apple.com/bh/app/ring-sizer-by-jason-withers/id795721582" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#000", border: "1px solid #444", borderRadius: "10px", padding: "8px 16px", cursor: "pointer", transition: "all 0.2s" }}
+                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = "#D4AF37"}
+                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = "#444"}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                      </svg>
+                      <div>
+                        <div style={{ color: "#aaa", fontSize: "9px" }}>Download on the</div>
+                        <div style={{ color: "white", fontSize: "13px", fontWeight: "bold", lineHeight: "1" }}>App Store</div>
+                      </div>
+                    </div>
+                  </a>
+                  <a href="https://play.google.com/store/apps/details?id=ru.cherrydesign.ringsizer&pcampaignid=web_share" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#000", border: "1px solid #444", borderRadius: "10px", padding: "8px 16px", cursor: "pointer", transition: "all 0.2s" }}
+                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = "#D4AF37"}
+                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = "#444"}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3.18 23.76c.3.16.64.19.96.1L13.84 12 10 8.16 3.18 23.76z" fill="#EA4335"/>
+                        <path d="M20.5 10.56l-2.54-1.47-4.12 3.9 4.12 3.91 2.57-1.49c.73-.43.73-1.51-.03-1.85z" fill="#FBBC05"/>
+                        <path d="M4.14.24C3.82.1 3.46.12 3.18.3L10 8.16l3.84-3.84L4.14.24z" fill="#4285F4"/>
+                        <path d="M13.84 12L4.14 23.76c.29.13.62.11.92-.06l9.73-5.64L13.84 12z" fill="#34A853"/>
+                      </svg>
+                      <div>
+                        <div style={{ color: "#aaa", fontSize: "9px" }}>Get it on</div>
+                        <div style={{ color: "white", fontSize: "13px", fontWeight: "bold", lineHeight: "1" }}>Google Play</div>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+
             {/* Categories */}
             <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "24px", flexWrap: "wrap" }}>
               {[["all","الكل"],["rings","خواتم"],["necklace","سلاسل"],["bracelet","أساور"]].map(([cat,label]) => (
